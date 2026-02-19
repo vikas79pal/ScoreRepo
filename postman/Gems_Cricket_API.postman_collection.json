@@ -1,0 +1,250 @@
+{
+  "info": {
+    "name": "Gems Cricket API",
+    "description": "Postman collection for Gems Cricket Game Backend API. All 5 endpoints with example requests and responses.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "gems-cricket-api-v1"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "Populated automatically after Register request"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        },
+        "description": "Verify that the server is up and running."
+      },
+      "response": [
+        {
+          "name": "Success",
+          "status": "OK",
+          "code": 200,
+          "body": "{\"success\":true,\"message\":\"Gems Cricket API is running.\",\"timestamp\":\"2025-04-22T10:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "1 – Send OTP",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"phone\": \"9876543210\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/send-otp",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "send-otp"]
+        },
+        "description": "Sends a hardcoded OTP (1234) for the given phone number. OTP expires in 1 minute. The OTP is NOT returned in the response."
+      },
+      "response": [
+        {
+          "name": "Success",
+          "status": "OK",
+          "code": 200,
+          "body": "{\"success\":true,\"message\":\"OTP sent successfully. It is valid for 1 minute.\"}"
+        },
+        {
+          "name": "Validation Error – invalid phone",
+          "status": "Unprocessable Entity",
+          "code": 422,
+          "body": "{\"success\":false,\"message\":\"Validation failed.\",\"errors\":[{\"field\":\"phone\",\"message\":\"Phone number must be exactly 10 digits.\"}]}"
+        }
+      ]
+    },
+    {
+      "name": "2 – Register",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const res = pm.response.json();",
+              "if (res.token) {",
+              "  pm.collectionVariables.set('token', res.token);",
+              "  console.log('Token saved:', res.token);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"phone\": \"9876543210\",\n  \"name\": \"Test User Name\",\n  \"dob\": \"2000-05-15\",\n  \"email\": \"testuser@example.com\",\n  \"otp\": \"1234\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/register",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "register"]
+        },
+        "description": "Registers a new user. All fields are mandatory. Phone must be unique. OTP must be valid and not expired. Returns a JWT token on success."
+      },
+      "response": [
+        {
+          "name": "Success",
+          "status": "Created",
+          "code": 201,
+          "body": "{\"success\":true,\"message\":\"Registration successful.\",\"token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"}"
+        },
+        {
+          "name": "Duplicate Phone",
+          "status": "Conflict",
+          "code": 409,
+          "body": "{\"success\":false,\"message\":\"Phone number is already registered.\"}"
+        },
+        {
+          "name": "Invalid / Expired OTP",
+          "status": "Bad Request",
+          "code": 400,
+          "body": "{\"success\":false,\"message\":\"OTP has expired. Please request a new OTP.\"}"
+        },
+        {
+          "name": "Validation Error",
+          "status": "Unprocessable Entity",
+          "code": 422,
+          "body": "{\"success\":false,\"message\":\"Validation failed.\",\"errors\":[{\"field\":\"email\",\"message\":\"Please provide a valid email address.\"}]}"
+        }
+      ]
+    },
+    {
+      "name": "3 – Save Score",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"score\": 350\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/score/save",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "score", "save"]
+        },
+        "description": "Saves a game score (50–500) for the authenticated user. Max 3 saves per calendar day (UTC). Requires Bearer token."
+      },
+      "response": [
+        {
+          "name": "Success",
+          "status": "Created",
+          "code": 201,
+          "body": "{\"success\":true,\"message\":\"Score saved successfully.\"}"
+        },
+        {
+          "name": "Daily Limit Reached",
+          "status": "Too Many Requests",
+          "code": 429,
+          "body": "{\"success\":false,\"message\":\"You have reached the maximum of 3 score submissions for today.\"}"
+        },
+        {
+          "name": "Score Out of Range",
+          "status": "Unprocessable Entity",
+          "code": 422,
+          "body": "{\"success\":false,\"message\":\"Validation failed.\",\"errors\":[{\"field\":\"score\",\"message\":\"Score must be an integer between 50 and 500.\"}]}"
+        },
+        {
+          "name": "Unauthorized",
+          "status": "Unauthorized",
+          "code": 401,
+          "body": "{\"success\":false,\"message\":\"Authorization token is required.\"}"
+        }
+      ]
+    },
+    {
+      "name": "4 – Get Score Card",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/score/card",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "score", "card"]
+        },
+        "description": "Generates a 1280×720 JPEG score card image showing the user's rank, total score, name, and current date. Returns the public URL of the generated image."
+      },
+      "response": [
+        {
+          "name": "Success",
+          "status": "OK",
+          "code": 200,
+          "body": "{\"success\":true,\"imageUrl\":\"http://localhost:3000/uploads/score_cards/scorecard_1_1714636800000.jpg\"}"
+        },
+        {
+          "name": "Unauthorized",
+          "status": "Unauthorized",
+          "code": 401,
+          "body": "{\"success\":false,\"message\":\"Authorization token is required.\"}"
+        }
+      ]
+    },
+    {
+      "name": "5 – Weekly Dashboard",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/score/weekly",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "score", "weekly"]
+        },
+        "description": "Returns week-wise score summary for the authenticated user. Weeks run Friday–Thursday. Week 1 started 6 Feb 2025."
+      },
+      "response": [
+        {
+          "name": "Success",
+          "status": "OK",
+          "code": 200,
+          "body": "{\"success\":true,\"weeks\":[{\"weekNo\":1,\"rank\":1,\"totalScore\":1500},{\"weekNo\":2,\"rank\":3,\"totalScore\":120}]}"
+        },
+        {
+          "name": "No Scores Yet",
+          "status": "OK",
+          "code": 200,
+          "body": "{\"success\":true,\"weeks\":[]}"
+        },
+        {
+          "name": "Unauthorized",
+          "status": "Unauthorized",
+          "code": 401,
+          "body": "{\"success\":false,\"message\":\"Authorization token is required.\"}"
+        }
+      ]
+    }
+  ]
+}

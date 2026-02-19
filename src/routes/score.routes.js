@@ -1,0 +1,15 @@
+'use strict';
+
+const router = require('express').Router();
+const { saveScore, getScoreCard, weeklyDashboard } = require('../controllers/score.controller');
+const { saveScoreValidator }                       = require('../validators/score.validator');
+const { validate }                                 = require('../middleware/validate.middleware');
+const { authenticate }                             = require('../middleware/auth.middleware');
+
+router.use(authenticate);
+
+router.post('/save',   saveScoreValidator, validate, saveScore);
+router.get('/card',    getScoreCard);
+router.get('/weekly',  weeklyDashboard);
+
+module.exports = router;
