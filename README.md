@@ -1,10 +1,10 @@
-# 🏏 Gems Cricket Game – Backend API
+#  Gems Cricket Game – Backend API
 
 A production-ready Node.js REST API for the Gems Cricket game. Features OTP-based registration, JWT authentication, score management, score card image generation, and weekly leaderboard data.
 
 ---
 
-## 📋 Assignment Summary
+## Assignment Summary
 
 Endpoints
 | Send OTP | `POST /api/auth/send-otp`
@@ -15,7 +15,7 @@ Endpoints
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
  Node.js (JavaScript) |
  Express.js |
  MySQL 8 (mysql2/promise) |
