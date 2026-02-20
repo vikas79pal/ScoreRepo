@@ -6,69 +6,27 @@ A production-ready Node.js REST API for the Gems Cricket game. Features OTP-base
 
 ## 📋 Assignment Summary
 
-| Feature | Endpoint | Auth |
-|---|---|---|
-| Send OTP | `POST /api/auth/send-otp` | ❌ Public |
-| Register | `POST /api/auth/register` | ❌ Public |
-| Save Score | `POST /api/score/save` | ✅ JWT |
-| Get Score Card | `GET /api/score/card` | ✅ JWT |
-| Weekly Dashboard | `GET /api/score/weekly` | ✅ JWT |
+Endpoints
+| Send OTP | `POST /api/auth/send-otp`
+| Register | `POST /api/auth/register` 
+| Save Score | `POST /api/score/save`
+| Get Score Card | `GET /api/score/card` 
+| Weekly Dashboard | `GET /api/score/weekly` 
 
 ---
 
 ## 🛠 Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Runtime | Node.js (JavaScript) |
-| Framework | Express.js |
-| Database | MySQL 8 (mysql2/promise) |
-| Auth | JWT (jsonwebtoken) |
-| Image Generation | node-canvas |
-| Validation | express-validator |
-| Dev server | nodemon |
-
+ Node.js (JavaScript) |
+ Express.js |
+ MySQL 8 (mysql2/promise) |
+ JWT (jsonwebtoken) |
+ node-canvas |
+ Joi |
+ nodemon |
+ 
 ---
 
-## 📁 Project Structure
-
-```
-gems-cricket-backend/
-├── database/
-│   └── schema.sql                  ← DB table creation script
-├── postman/
-│   └── Gems_Cricket_API.postman_collection.json
-├── src/
-│   ├── app.js                      ← Entry point
-│   ├── config/
-│   │   └── db.js                   ← MySQL connection pool
-│   ├── controllers/
-│   │   ├── auth.controller.js      ← OTP & Register logic
-│   │   └── score.controller.js     ← Save, Card, Weekly logic
-│   ├── middleware/
-│   │   ├── auth.middleware.js      ← JWT verification
-│   │   └── validate.middleware.js  ← express-validator errors
-│   ├── routes/
-│   │   ├── auth.routes.js
-│   │   └── score.routes.js
-│   ├── utils/
-│   │   ├── jwt.util.js             ← Token signing helper
-│   │   ├── scoreCard.util.js       ← JPEG image generator
-│   │   └── week.util.js            ← Friday-Thursday week calc
-│   └── validators/
-│       ├── auth.validator.js
-│       └── score.validator.js
-├── uploads/
-│   └── score_cards/                ← Auto-created, stores card JPEGs
-├── .env                            ← Your env variables (not in git)
-├── .env.example                    ← Template
-├── .gitignore
-└── package.json
-```
-
----
-
-## ⚡ Quick Start
+##  Quick Start
 
 ### 1. Prerequisites
 
@@ -91,19 +49,15 @@ mysql -u root -p < database/schema.sql
 
 ### 4. Configure environment variables
 
-```bash
-cp .env.example .env
-```
-
 Edit `.env`:
 
 ```env
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=root
-DB_PASSWORD=your_mysql_password   # ← Change this
+DB_PASSWORD=your_mysql_password   
 DB_NAME=gems_cricket
-JWT_SECRET=your_super_secret_key  # ← Change this
+JWT_SECRET=your_super_secret_key  
 ```
 
 ### 5. Start the server
@@ -238,8 +192,8 @@ Authorization: Bearer <token>
 ```
 
 **Rules:**
-- Weeks run **Friday → Thursday**
-- Week 1 started **6 February 2025**
+- Weeks run **Friday to Thursday**
+- Week 1 started ** As per the COde**
 
 **Response (200):**
 ```json
@@ -252,30 +206,3 @@ Authorization: Bearer <token>
 }
 ```
 
----
-
-## 📬 Postman Collection
-
-Import `postman/Gems_Cricket_API.postman_collection.json` into Postman.
-
-The **Register** request automatically saves the returned `token` to the `{{token}}` collection variable so all subsequent authenticated requests work out of the box.
-
----
-
-## 🗃 Database Script
-
-Run `database/schema.sql` to create:
-
-| Table | Purpose |
-|---|---|
-| `users` | Registered users (phone, name, dob, email) |
-| `otps` | OTP records with expiry |
-| `scores` | Individual game scores per user |
-
----
-
-## 🔐 Security Notes
-
-- Change `JWT_SECRET` and `DB_PASSWORD` in `.env` before deployment
-- `.env` is in `.gitignore` – never commit secrets
-- OTP is hardcoded (1234) as per assignment; replace with SMS gateway for production
