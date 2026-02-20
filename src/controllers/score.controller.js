@@ -2,10 +2,10 @@
 
 const path    = require('path');
 const moment  = require('moment');
-const { Op, fn, col, literal } = require('sequelize');
-const { Score }                = require('../models');
-const { generateScoreCard }    = require('../utils/scoreCard.util');
-const { getWeekNumber, getWeekRange } = require('../utils/week.util');
+const { Op, literal } = require('sequelize');
+const { Score }       = require('../models');
+const { generateScoreCard }                        = require('../utils/scoreCard.util');
+const { getEpochStart, getWeekNumber, getWeekRange } = require('../utils/week.util');
 
 const saveScore = async (req, res) => {
   try {
@@ -78,19 +78,26 @@ const weeklyDashboard = async (req, res) => {
     const userId = req.user.id;
 
     const scoreRows = await Score.findAll({
-      where:  { userId },
-      order:  [['playedAt', 'ASC']],
-      raw:    true,
+      where: { userId },
+      order: [['playedAt', 'ASC']],
+      raw:   true,
     });
 
     if (scoreRows.length === 0) {
       return res.status(200).json({ success: true, weeks: [] });
     }
 
-    // aggregate total score per week
+    // derive epoch from the very first score ever recorded across all users
+    const firstEver = await Score.findOne({
+      order: [['playedAt', 'ASC']],
+      raw:   true,
+    });
+    const epoch = getEpochStart(moment.utc(firstEver.playedAt));
+
+    // aggregate this user's total score per week
     const weekMap = {};
     for (const row of scoreRows) {
-      const weekNo = getWeekNumber(row.playedAt);
+      const weekNo = getWeekNumber(row.playedAt, epoch);
       if (weekNo > 0) {
         weekMap[weekNo] = (weekMap[weekNo] || 0) + row.score;
       }
@@ -99,13 +106,12 @@ const weeklyDashboard = async (req, res) => {
     const weeks = [];
     for (const [weekNoStr, userTotal] of Object.entries(weekMap)) {
       const weekNo = parseInt(weekNoStr, 10);
-      const { start, end } = getWeekRange(weekNo);
+      const { start, end } = getWeekRange(weekNo, epoch);
 
+      // count users with a strictly higher weekly total → determines rank
       const higherRanked = await Score.findAll({
         attributes: ['userId'],
-        where: {
-          playedAt: { [Op.between]: [start.toDate(), end.toDate()] },
-        },
+        where:  { playedAt: { [Op.between]: [start.toDate(), end.toDate()] } },
         group:  ['userId'],
         having: literal(`SUM(score) > ${userTotal}`),
         raw:    true,
@@ -128,3 +134,4 @@ const weeklyDashboard = async (req, res) => {
 };
 
 module.exports = { saveScore, getScoreCard, weeklyDashboard };
+

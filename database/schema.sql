@@ -1,7 +1,6 @@
--- ============================================================
+
 -- Gems Cricket Game Database - Table Creation Script
 -- Database: gems_cricket
--- ============================================================
 
 CREATE DATABASE IF NOT EXISTS gems_cricket
   CHARACTER SET utf8mb4
@@ -9,10 +8,7 @@ CREATE DATABASE IF NOT EXISTS gems_cricket
 
 USE gems_cricket;
 
--- ============================================================
 -- Table: users
--- Stores registered user information
--- ============================================================
 CREATE TABLE IF NOT EXISTS users (
   id          INT UNSIGNED      NOT NULL AUTO_INCREMENT,
   phone       VARCHAR(15)       NOT NULL,
@@ -26,10 +22,7 @@ CREATE TABLE IF NOT EXISTS users (
   UNIQUE KEY uq_users_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================================
 -- Table: otps
--- Stores OTP records with expiry for phone verification
--- ============================================================
 CREATE TABLE IF NOT EXISTS otps (
   id          INT UNSIGNED       NOT NULL AUTO_INCREMENT,
   phone       VARCHAR(15)        NOT NULL,
@@ -42,10 +35,8 @@ CREATE TABLE IF NOT EXISTS otps (
   KEY idx_otps_expires_at (expires_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================================
 -- Table: scores
--- Stores individual game scores per user per session
--- ============================================================
+
 CREATE TABLE IF NOT EXISTS scores (
   id          INT UNSIGNED       NOT NULL AUTO_INCREMENT,
   user_id     INT UNSIGNED       NOT NULL,
@@ -58,10 +49,3 @@ CREATE TABLE IF NOT EXISTS scores (
     REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================================
--- Verification Queries (Run after creation to verify)
--- ============================================================
--- SHOW TABLES;
--- DESCRIBE users;
--- DESCRIBE otps;
--- DESCRIBE scores;

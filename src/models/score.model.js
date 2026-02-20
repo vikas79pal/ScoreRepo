@@ -20,7 +20,7 @@ const Score = sequelize.define('scores', {
 }, {
   timestamps: true,
   updatedAt:  false,
-  createdAt:  'playedAt',   // maps createdAt → played_at column
+  createdAt:  'playedAt',   // mapin\g createdAt  played_at column
 });
 
 module.exports = Score;

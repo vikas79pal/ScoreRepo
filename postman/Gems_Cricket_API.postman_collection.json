@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Gems Cricket API",
-    "description": "Postman collection for Gems Cricket Game Backend API. All 5 endpoints with example requests and responses.",
+    "description": "Postman collection for Gems Cricket Game Backend API. All 6 endpoints with example requests and responses.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_postman_id": "gems-cricket-api-v1"
   },
@@ -136,7 +136,74 @@
       ]
     },
     {
-      "name": "3 – Save Score",
+      "name": "3 – Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const res = pm.response.json();",
+              "if (res.token) {",
+              "  pm.collectionVariables.set('token', res.token);",
+              "  console.log('Token saved:', res.token);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"phone\": \"9876543210\",\n  \"otp\": \"1234\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "login"]
+        },
+        "description": "Login with a registered phone number. Call send-otp first to generate an OTP, then submit phone + OTP here. Returns a fresh JWT token."
+      },
+      "response": [
+        {
+          "name": "Success",
+          "status": "OK",
+          "code": 200,
+          "body": "{\"success\":true,\"message\":\"Login successful.\",\"token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"}"
+        },
+        {
+          "name": "Phone Not Registered",
+          "status": "Not Found",
+          "code": 404,
+          "body": "{\"success\":false,\"message\":\"No account found for this phone number. Please register first.\"}"
+        },
+        {
+          "name": "Invalid OTP",
+          "status": "Bad Request",
+          "code": 400,
+          "body": "{\"success\":false,\"message\":\"Invalid OTP. Please request a new OTP.\"}"
+        },
+        {
+          "name": "Expired OTP",
+          "status": "Bad Request",
+          "code": 400,
+          "body": "{\"success\":false,\"message\":\"OTP has expired. Please request a new OTP.\"}"
+        },
+        {
+          "name": "Validation Error",
+          "status": "Unprocessable Entity",
+          "code": 422,
+          "body": "{\"success\":false,\"message\":\"Validation failed.\",\"errors\":[{\"field\":\"phone\",\"message\":\"Phone number must be exactly 10 digits.\"}]}"
+        }
+      ]
+    },
+    {
+      "name": "4 – Save Score",
       "request": {
         "method": "POST",
         "header": [

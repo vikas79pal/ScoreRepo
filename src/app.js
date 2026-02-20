@@ -7,9 +7,6 @@ const path    = require('path');
 const fs      = require('fs');
 const { testConnection } = require('./config/db');
 
-// load models so Sequelize registers them before any route handler runs
-require('./models');
-
 const authRoutes  = require('./routes/auth.routes');
 const scoreRoutes = require('./routes/score.routes');
 

@@ -28,7 +28,7 @@ const Otp = sequelize.define('otps', {
   },
 }, {
   timestamps:  true,
-  updatedAt:   false,   // otps table has no updated_at column
+  updatedAt:   false,  
 });
 
 module.exports = Otp;

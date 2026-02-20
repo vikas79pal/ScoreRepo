@@ -2,19 +2,26 @@
 
 const moment = require('moment');
 
-// weeks run Friday → Thursday; week 1 started on 6 Feb 2025
-const EPOCH_START = moment.utc('2025-02-06', 'YYYY-MM-DD').startOf('day');
+// weeks runs from Friday to Thursday
 
-const getWeekNumber = (date) => {
-  const diffDays = moment.utc(date).startOf('day').diff(EPOCH_START, 'days');
+const getEpochStart = (firstDate) => {
+  const d = moment.utc(firstDate).startOf('day');
+  const day = d.day(); 
+  const daysBack = day >= 5 ? day - 5 : day + 2;
+  return d.subtract(daysBack, 'days');
+};
+
+const getWeekNumber = (date, epoch) => {
+  const diffDays = moment.utc(date).startOf('day').diff(epoch, 'days');
   if (diffDays < 0) return 0;
   return Math.floor(diffDays / 7) + 1;
 };
 
-const getWeekRange = (weekNo) => {
-  const start = EPOCH_START.clone().add((weekNo - 1) * 7, 'days');
+
+const getWeekRange = (weekNo, epoch) => {
+  const start = epoch.clone().add((weekNo - 1) * 7, 'days');
   const end   = start.clone().add(6, 'days').endOf('day');
   return { start, end };
 };
 
-module.exports = { getWeekNumber, getWeekRange, EPOCH_START };
+module.exports = { getEpochStart, getWeekNumber, getWeekRange };

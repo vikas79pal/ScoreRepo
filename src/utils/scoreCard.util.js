@@ -43,7 +43,7 @@ const generateScoreCard = async ({ name, rank, totalScore, outputPath }) => {
   ctx.fillText(`Score: ${totalScore}`, cx, H * 0.60);
   ctx.fillText(`Date: ${moment().format('Do MMMM YY')}`, cx, H * 0.70);
 
-  // divider
+  // partiton
   ctx.strokeStyle = '#CCCCCC';
   ctx.lineWidth   = 2;
   ctx.beginPath();

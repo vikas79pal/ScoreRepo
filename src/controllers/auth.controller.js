@@ -80,4 +80,50 @@ const register = async (req, res) => {
   }
 };
 
-module.exports = { sendOtp, register };
+const login = async (req, res) => {
+  try {
+    const { phone, otp } = req.body;
+
+    const user = await User.findOne({ where: { phone } });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'No account found for this phone number. Please register first.',
+      });
+    }
+
+    const otpRecord = await Otp.findOne({
+      where: { phone, otp, isUsed: false },
+      order: [['createdAt', 'DESC']],
+    });
+
+    if (!otpRecord) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid OTP. Please request a new OTP.',
+      });
+    }
+
+    if (moment.utc().isAfter(moment.utc(otpRecord.expiresAt))) {
+      return res.status(400).json({
+        success: false,
+        message: 'OTP has expired. Please request a new OTP.',
+      });
+    }
+
+    await otpRecord.update({ isUsed: true });
+
+    const token = signToken({ id: user.id, phone: user.phone, name: user.name, email: user.email });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Login successful.',
+      token,
+    });
+  } catch (err) {
+    console.error('[login]', err);
+    return res.status(500).json({ success: false, message: 'Internal server error.' });
+  }
+};
+
+module.exports = { sendOtp, register, login };

@@ -1,41 +1,47 @@
 'use strict';
 
-const { body } = require('express-validator');
+const Joi = require('joi');
 
-const sendOtpValidator = [
-  body('phone')
-    .trim()
-    .notEmpty().withMessage('Phone number is required.')
-    .matches(/^\d{10}$/).withMessage('Phone number must be exactly 10 digits.'),
-];
+// reusable field definitions
+const phone = Joi.string().pattern(/^\d{10}$/).required().messages({
+  'string.empty':   'Phone number is required.',
+  'string.pattern.base': 'Phone number must be exactly 10 digits.',
+  'any.required':   'Phone number is required.',
+});
 
-const registerValidator = [
-  body('phone')
-    .trim()
-    .notEmpty().withMessage('Phone number is required.')
-    .matches(/^\d{10}$/).withMessage('Phone number must be exactly 10 digits.'),
+const otp = Joi.string().min(4).max(6).required().messages({
+  'string.empty':   'OTP is required.',
+  'string.min':     'OTP must be 4–6 digits.',
+  'string.max':     'OTP must be 4–6 digits.',
+  'any.required':   'OTP is required.',
+});
 
-  body('name')
-    .trim()
-    .notEmpty().withMessage('Name is required.')
-    .isLength({ min: 2, max: 100 }).withMessage('Name must be between 2 and 100 characters.'),
+const sendOtpSchema = Joi.object({ phone });
 
-  body('dob')
-    .trim()
-    .notEmpty().withMessage('Date of birth is required.')
-    .isDate({ format: 'YYYY-MM-DD', strictMode: true })
-    .withMessage('Date of birth must be in YYYY-MM-DD format.'),
+const registerSchema = Joi.object({
+  phone,
+  otp,
+  name: Joi.string().min(2).max(100).required().messages({
+    'string.empty': 'Name is required.',
+    'string.min':   'Name must be between 2 and 100 characters.',
+    'string.max':   'Name must be between 2 and 100 characters.',
+    'any.required': 'Name is required.',
+  }),
+  dob: Joi.string()
+    .pattern(/^\d{4}-\d{2}-\d{2}$/)
+    .required()
+    .messages({
+      'string.empty':        'Date of birth is required.',
+      'string.pattern.base': 'Date of birth must be in YYYY-MM-DD format.',
+      'any.required':        'Date of birth is required.',
+    }),
+  email: Joi.string().email({ tlds: { allow: false } }).required().messages({
+    'string.empty': 'Email is required.',
+    'string.email': 'Please provide a valid email address.',
+    'any.required': 'Email is required.',
+  }),
+});
 
-  body('email')
-    .trim()
-    .notEmpty().withMessage('Email is required.')
-    .isEmail().withMessage('Please provide a valid email address.')
-    .normalizeEmail(),
+const loginSchema = Joi.object({ phone, otp });
 
-  body('otp')
-    .trim()
-    .notEmpty().withMessage('OTP is required.')
-    .isLength({ min: 4, max: 6 }).withMessage('OTP must be 4–6 digits.'),
-];
-
-module.exports = { sendOtpValidator, registerValidator };
+module.exports = { sendOtpSchema, registerSchema, loginSchema };
