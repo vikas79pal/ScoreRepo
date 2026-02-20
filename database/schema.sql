@@ -1,5 +1,5 @@
 
--- Gems Cricket Game Database - Table Creation Script
+-- Gems Cricket Game Database
 -- Database: gems_cricket
 
 CREATE DATABASE IF NOT EXISTS gems_cricket
